@@ -1,0 +1,53 @@
+# IDE-specific files
+.idea/
+.vscode/
+
+# Environment variables
+.env
+
+# Virtual environments
+venv/
+env/
+.venv/
+.virtualenv/
+
+# Byte-compiled files
+*.pyc
+*.pyo
+__pycache__/
+
+# Logs and debugging
+*.log
+*.debug
+
+# Database files
+*.sqlite3
+*.db
+
+# Flask-specific files
+instance/
+instance/*
+
+# Static and media files (if dynamically generated)
+static/
+media/
+
+# Test artifacts
+coverage/
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+
+# Tools and API clients
+Postman/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
