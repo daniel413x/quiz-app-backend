@@ -11,6 +11,7 @@ from models.quiz_question import QuizQuestion
 from models.quiz_instance import QuizInstance
 from extensions import db
 from models.serializers.quiz_instance_question_serializer import QuizInstanceQuestionSerializer
+from models.user_answer import UserAnswer
 
 domain_quiz_instance_quiz_bp = Blueprint("domain_quiz_instance_bp", __name__)
 
@@ -58,21 +59,38 @@ def create_quiz_instance(domain_slug):
         )
 
 
-@domain_quiz_instance_quiz_bp.route("/<id>/get-quiz-question", methods=["GET"])
-def get_quiz_instance_question(domain_slug, id):
+@domain_quiz_instance_quiz_bp.route("/<id>/get-quiz-question/<q_num>", methods=["GET"])
+def get_quiz_instance_question(domain_slug, id, q_num):
     """
     get a quiz question by id and integer
 
     as the user works through a quiz, they will query the endpoint and use the param qNum incrementally, e.g. 1, 2, 3, etc.
     """
     try:
-        p_num = int(request.args.get("qNum", "0"))
-        print(p_num)
-        query = QuizInstance.query.filter_by(id=id).options(joinedload(QuizInstance.questions).joinedload(QuizInstanceQuestion.answers))
+        query = QuizInstance.query.filter_by(id=id).options(
+            joinedload(QuizInstance.questions)
+            .joinedload(QuizInstanceQuestion.answers)
+        )
         instance = query.first()
-        quiz_question = instance.questions[p_num]
+        quiz_question = instance.questions[int(q_num)]
+        # get answer IDs from QuizInstanceAnswers
+        answer_ids = [answer.id for answer in quiz_question.answers]
+        # find correct QuizInstanceAnswers where the original QuizAnswer is marked correct
+        correct_quiz_instance_answers = QuizInstanceAnswer.query.join(QuizAnswer).filter(
+            QuizInstanceAnswer.id.in_(answer_ids),
+            QuizAnswer.correct_answer == True
+        ).all()
+        # find a UserAnswer that matches these correct answers
+        # on the frontend, will be used to immediately mark the answer correct if the user is navigating back through questions they already passed
+        correct_user_answer = UserAnswer.query.filter(
+            UserAnswer.quiz_instance_answer_id.in_([ans.id for ans in correct_quiz_instance_answers])
+        ).first()
+        # serialize
         serializer = QuizInstanceQuestionSerializer()
         returned_question = serializer.dump(quiz_question)
+        # include the correct user answer if found
+        if correct_user_answer:
+            returned_question["correct_user_answer"] = correct_user_answer.json()
         return jsonify(returned_question), 200
     except Exception as e:
         return make_response(

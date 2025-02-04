@@ -11,6 +11,10 @@ class UserAnswer(db.Model):
 
     quiz_instance_answer = db.relationship("QuizInstanceAnswer")
 
+    # quiz_instance_question_id = db.Column(UUID(as_uuid=True), db.ForeignKey("quiz_instance_question.id"), nullable=True)
+    #
+    # quiz_instance_question = db.relationship("QuizInstanceQuestion")
+
     def json(self):
         return {
             "id": str(self.id),

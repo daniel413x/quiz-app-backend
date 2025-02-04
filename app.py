@@ -3,14 +3,12 @@ from flask_cors import CORS
 from os import environ
 from dotenv import load_dotenv
 
-from blueprints.api.domain.quiz_answer.routes import domain_quiz_answer_bp
 from blueprints.api.domain.quiz_category.routes import domain_quiz_category_bp
 from blueprints.api.domain.quiz_instance.routes import domain_quiz_instance_quiz_bp
 from blueprints.api.domain.quiz_question.routes import domain_quiz_question_bp
 from blueprints.api.domain.quiz.routes import domain_quiz_bp
 from blueprints.api.domain.routes import domain_bp
 from blueprints.api.domain.user_answer.routes import domain_user_answer_bp
-from blueprints.api.user.routes import user_bp
 from blueprints.test.routes import test_bp
 from extensions import db
 from consts.routes import API_ROUTE, TEST_ROUTE, QUIZ_ROUTE, QUIZ_CATEGORY_ROUTE, QUIZ_QUESTION_ROUTE, \
@@ -36,12 +34,10 @@ with app.app_context():
 
 app.register_blueprint(domain_quiz_category_bp, url_prefix=f"/{API_ROUTE}/{DOMAIN_ROUTE}/<domain_slug>/{QUIZ_CATEGORY_ROUTE}")
 app.register_blueprint(domain_quiz_question_bp, url_prefix=f"/{API_ROUTE}/{DOMAIN_ROUTE}/<domain_slug>/{QUIZ_QUESTION_ROUTE}")
-app.register_blueprint(domain_quiz_answer_bp, url_prefix=f"/{API_ROUTE}/{DOMAIN_ROUTE}/<domain_slug>/{QUIZ_ANSWER_ROUTE}")
 app.register_blueprint(domain_quiz_bp, url_prefix=f"/{API_ROUTE}/{DOMAIN_ROUTE}/<domain_slug>/{QUIZ_ROUTE}")
 app.register_blueprint(domain_quiz_instance_quiz_bp, url_prefix=f"/{API_ROUTE}/{DOMAIN_ROUTE}/<domain_slug>/{QUIZ_INSTANCE_ROUTE}")
-app.register_blueprint(domain_user_answer_bp, url_prefix=f"/{API_ROUTE}/{DOMAIN_ROUTE}/<domain_slug>/{USER_ANSWER_ROUTE}")
+app.register_blueprint(domain_user_answer_bp, url_prefix=f"/{API_ROUTE}/{DOMAIN_ROUTE}/<domain_slug>/{USER_ANSWER_ROUTE}/<instance_id>")
 
-app.register_blueprint(user_bp, url_prefix=f"/{API_ROUTE}/{USER_ROUTE}")
 app.register_blueprint(domain_bp, url_prefix=f"/{API_ROUTE}/{DOMAIN_ROUTE}")
 app.register_blueprint(test_bp, url_prefix=f"/{API_ROUTE}/{TEST_ROUTE}")
 

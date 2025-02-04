@@ -8,7 +8,7 @@ class QuizInstanceQuestion(db.Model):
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     quiz_instance_id = db.Column(UUID(as_uuid=True), db.ForeignKey("quiz_instance.id"), nullable=False)
-    quiz_question_id = db.Column(UUID(as_uuid=True), db.ForeignKey("quiz_question.id"), nullable=False)
+    quiz_question_id = db.Column(UUID(as_uuid=True), db.ForeignKey("quiz_question.id", ondelete="SET NULL"), nullable=True)
 
     answers = db.relationship('QuizInstanceAnswer', back_populates='quiz_instance_question', cascade="all, delete-orphan", lazy=True)
     quiz_instance = db.relationship("QuizInstance", back_populates="questions")

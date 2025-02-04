@@ -3,13 +3,12 @@ import uuid
 from flask import Blueprint, jsonify, request, make_response
 from sqlalchemy.orm import joinedload
 
-from models.quiz import Quiz
+from models.quiz_instance import QuizInstance
+
 from models.quiz_answer import QuizAnswer
 from models.quiz_instance_answer import QuizInstanceAnswer
-from models.quiz_instance_question import QuizInstanceQuestion
-from models.quiz_question import QuizQuestion
-from models.quiz_instance import QuizInstance
 from extensions import db
+from models.quiz_instance_question import QuizInstanceQuestion
 from models.serializers.quiz_instance_question_serializer import QuizInstanceQuestionSerializer
 from models.user_answer import UserAnswer
 
@@ -17,10 +16,10 @@ domain_user_answer_bp = Blueprint("domain_user_answer_bp", __name__)
 
 
 @domain_user_answer_bp.route("", methods=["POST"])
-def create_user_answer(domain_slug):
+def create_user_answer(domain_slug, instance_id):
     try:
         data = request.get_json()
-        # answer_id referrs to a quiz_instance_answer
+        # answer_id refers to a quiz_instance_answer
         answer_id = data["answerId"]
         quiz_instance_answer = QuizInstanceAnswer.query.filter_by(id=answer_id).first_or_404()
         quiz_answer = QuizAnswer.query.filter_by(id=quiz_instance_answer.quiz_answer_id).first_or_404()
@@ -37,6 +36,6 @@ def create_user_answer(domain_slug):
         print(e)
         # Handle other exceptions
         return make_response(
-            jsonify({"message": "Error creating quiz", "error": str(e)}), 500
+            jsonify({"message": "Error creating user answer", "error": str(e)}), 500
         )
 
