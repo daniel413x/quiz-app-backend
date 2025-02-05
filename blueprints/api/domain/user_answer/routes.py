@@ -9,6 +9,7 @@ from models.quiz_answer import QuizAnswer
 from models.quiz_instance_answer import QuizInstanceAnswer
 from extensions import db
 from models.quiz_instance_question import QuizInstanceQuestion
+from models.quiz_results import QuizResults
 from models.serializers.quiz_instance_question_serializer import QuizInstanceQuestionSerializer
 from models.user_answer import UserAnswer
 
@@ -27,6 +28,10 @@ def create_user_answer(domain_slug, instance_id):
         existing_user_answer = UserAnswer.query.filter_by(quiz_instance_answer_id=answer_id).first()
         if existing_user_answer:
             return jsonify({ "is_correct": is_correct }), 200
+        will_increment_progress = is_correct and not existing_user_answer
+        if will_increment_progress:
+            quiz_results = QuizResults.query.filter_by(quiz_instance_id=instance_id).first_or_404()
+            quiz_results.progress += 1
         user_answer = UserAnswer()
         user_answer.quiz_instance_answer_id = answer_id
         db.session.add(user_answer)

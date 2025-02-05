@@ -1,5 +1,4 @@
 from marshmallow import Schema, fields, post_load
-from models.serializers.quiz_answer_serializer import QuizAnswerSerializer
 from models.quiz_instance_question import QuizInstanceQuestion
 
 class QuizInstanceAnswerSerializer(Schema):

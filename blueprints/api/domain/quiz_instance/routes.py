@@ -10,13 +10,33 @@ from models.quiz_instance_question import QuizInstanceQuestion
 from models.quiz_question import QuizQuestion
 from models.quiz_instance import QuizInstance
 from extensions import db
+from models.quiz_results import QuizResults
 from models.serializers.quiz_instance_question_serializer import QuizInstanceQuestionSerializer
+from models.serializers.quiz_instance_serializer import QuizInstanceSerializer
 from models.user_answer import UserAnswer
 
-domain_quiz_instance_quiz_bp = Blueprint("domain_quiz_instance_bp", __name__)
+domain_quiz_instance_bp = Blueprint("domain_quiz_instance_bp", __name__)
 
 
-@domain_quiz_instance_quiz_bp.route("", methods=["POST"])
+
+@domain_quiz_instance_bp.route("/<id>", methods=["GET"])
+def get_quiz_instance(domain_slug, id):
+    try:
+        query = QuizInstance.query.filter_by(id=id).options(
+            joinedload(QuizInstance.questions)
+            .joinedload(QuizInstanceQuestion.answers)
+        ).first_or_404()
+        serializer = QuizInstanceSerializer()
+        quiz_instance = serializer.dump(query)
+        return jsonify(quiz_instance), 200
+    except Exception as e:
+        return make_response(
+            jsonify({"message": "Error creating quiz", "error": str(e)}), 500
+        )
+
+
+
+@domain_quiz_instance_bp.route("", methods=["POST"])
 def create_quiz_instance(domain_slug):
     try:
         # fetch Quiz, create QuizInstance
@@ -48,6 +68,9 @@ def create_quiz_instance(domain_slug):
                 new_quiz_instance_answer.quiz_instance_question_id = new_quiz_instance_question_id
                 db.session.add(new_quiz_instance_answer)
             db.session.add(new_quiz_instance_question)
+        quiz_results = QuizResults()
+        quiz_results.quiz_instance_id = quiz_instance_id
+        db.session.add(quiz_results)
         db.session.commit()
         # return only the idea which the FE uses to push to the next page
         return jsonify({ "id": str(quiz_instance_id) }), 200
@@ -59,14 +82,19 @@ def create_quiz_instance(domain_slug):
         )
 
 
-@domain_quiz_instance_quiz_bp.route("/<id>/get-quiz-question/<q_num>", methods=["GET"])
+@domain_quiz_instance_bp.route("/<id>/get-quiz-question/<q_num>", methods=["GET"])
 def get_quiz_instance_question(domain_slug, id, q_num):
     """
     get a quiz question by id and integer
 
     as the user works through a quiz, they will query the endpoint and use the param qNum incrementally, e.g. 1, 2, 3, etc.
+
+    if the user tries to access a quiz question that they have not yet progressed to, return a number according to their actual progress
     """
     try:
+        quiz_results = QuizResults.query.filter_by(quiz_instance_id=id).first_or_404()
+        if int(q_num) > quiz_results.progress:
+            return jsonify({ "redirect": str(quiz_results.progress) }), 200
         query = QuizInstance.query.filter_by(id=id).options(
             joinedload(QuizInstance.questions)
             .joinedload(QuizInstanceQuestion.answers)

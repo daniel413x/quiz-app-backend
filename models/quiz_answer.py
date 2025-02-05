@@ -17,6 +17,7 @@ class QuizAnswer(db.Model):
 
     # Relationship to question
     question = db.relationship('QuizQuestion', back_populates='answers')
+    quiz_instance_answer = db.relationship("QuizInstanceAnswer", back_populates="quiz_answer", lazy=True)
 
     def json(self):
         return {
